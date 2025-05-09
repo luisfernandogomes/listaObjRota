@@ -1,14 +1,13 @@
 from datetime import date
 
+from atividade2.models import db_session
+from models import Livro
 import flet as ft
 from flet import AppBar, Text, View
 from flet.core.colors import Colors
-
-class Livro():
-    def __init__(self, nome, descricao, autor):
-        self.nome = nome
-        self.descricao = descricao
-        self.autor = autor
+import sqlalchemy
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, desc
 
 def main(page: ft.Page):
     # Configurações
@@ -16,35 +15,75 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.DARK  # ou ft.ThemeMode.DARK
     page.window.width = 375
     page.window.height = 667
-    def lista_em_detalhes(e):
+    # def lista_em_detalhes(e):
+    #     lv_Descricao.controls.clear()
+    #     for livro in lista:
+    #         lv_Descricao.controls.append(
+    #             ft.ListTile(
+    #                 leading=ft.Icon(ft.Icons.PERSON),
+    #                 title=ft.Text(livro.nome),
+    #                 subtitle=ft.Text(livro.autor),
+    #                 trailing=ft.PopupMenuButton(
+    #                     icon=ft.Icons.MORE_VERT,
+    #                     items=[
+    #                         ft.PopupMenuItem(text='detalhes',on_click=lambda _: page.go('/terceira')),
+    #                     ]
+    #                 )
+    #             )
+    #         )
+    #     page.update()
+    def exibir_banco_em_detalhes(e):
         lv_Descricao.controls.clear()
-        for livro in lista:
+        livros = db_session.execute(select(Livro)).scalars()
+        for livro in livros:
             lv_Descricao.controls.append(
                 ft.ListTile(
                     leading=ft.Icon(ft.Icons.PERSON),
                     title=ft.Text(livro.nome),
                     subtitle=ft.Text(livro.autor),
                     trailing=ft.PopupMenuButton(
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(text='detalhes',on_click=lambda _: page.go('/terceira')),
-                        ]
-                    )
-                )
-            )
+                                            icon=ft.Icons.MORE_VERT,
+                                            items=[
+                                                ft.PopupMenuItem(text='detalhes',on_click=lambda _: exibir_detalhesuu(Livro.id)),
+
+                                            ]
+                                        )
+                                    )
+                                )
         page.update()
 
 
     lista = []
     # Funções
-    def exibir_lista(e):
-        print('teste')
+    def exibir_banco(e):
+        livros = db_session.execute(select(Livro)).scalars()
         lv_Descricao.controls.clear()
-        for livro in lista:
+        for livro in livros:
             lv_Descricao.controls.append(
-                ft.Text(value=f'nome do livro {livro.nome} \ndescrição: {livro.descricao}\nautor: {livro.autor}')
+                ft.Text(value=f'Nome do livro: {livro.nome}\nDescricao do livro: {livro.descricao}\nAutor do livro: {livro.autor}\n\n\n')
             )
-    def salvar_user(e):
+    txt_titulo = ft.Text('')
+    txt_autor = ft.Text('')
+    txt_descricao = ft.Text('')
+
+    def exibir_detalhesuu(id_livro):
+        livros = db_session.execute(select(Livro).filter_by(id=id_livro)).scalar()
+        txt_titulo.value = livros.nome
+        txt_autor.value = livros.autor
+        txt_descricao.value = livros.descricao
+        page.go('/terceira')
+
+    # def exibir_lista(e):
+    #     print('teste')
+    #     lv_Descricao.controls.clear()
+    #     for livro in lista:
+    #         lv_Descricao.controls.append(
+    #             ft.Text(value=f'nome do livro {livro.nome} \ndescrição: {livro.descricao}\nautor: {livro.autor}')
+    #         )
+    # def detalhes(e,id_do_livro):
+
+
+    def salvar_livro(e):
         if input_nome.value == '' or input_descricao.value == '' or input_autor.value == '':
             page.overlay.append(msg_error)
             msg_error.open = True
@@ -55,8 +94,7 @@ def main(page: ft.Page):
             page.update()
         else:
             livro = Livro(nome=input_nome.value, descricao=input_descricao.value, autor=input_autor.value)
-            lista.append(livro)
-
+            livro.save()
             input_nome.value = ''
             input_descricao.value = ''
             input_autor.value = ''
@@ -77,7 +115,7 @@ def main(page: ft.Page):
                     input_autor,
                     ft.Button(
                         text="Salvar",
-                        on_click=lambda _: salvar_user(e),
+                        on_click=lambda _: salvar_livro(e),
                     ),
                     ft.Button(
                         text="Exibir",
@@ -86,33 +124,38 @@ def main(page: ft.Page):
                 ],
             )
         )
-        if page.route == "/segunda":
-            # exibir_lista(e)
-            lista_em_detalhes(e)
+        if page.route == "/segunda" or page.route == "/terceira":
+            exibir_banco_em_detalhes(e)
+
             page.views.append(
                 View(
                     "/segunda",
                     [
                         AppBar(title=Text("Segunda tela"), bgcolor=Colors.SECONDARY_CONTAINER),
                         lv_Descricao,
-                        ft.FloatingActionButton('+', on_click=lambda _:page.go('/'),)
+
+
+                        # ft.FloatingActionButton('+', on_click=detalhes(e))
                     ],
                 )
             )
         page.update()
         if page.route == "/terceira":
-            exibir_lista(e)
             page.views.append(
                 View(
                     "/terceira",
                     [
-                        AppBar(title=Text("Segunda tela"), bgcolor=Colors.SECONDARY_CONTAINER),
-                        lv_Descricao,
+                        AppBar(title=Text('terceira tela'), bgcolor=Colors.SECONDARY_CONTAINER),
+                        txt_titulo,
+                        txt_autor,
+                        txt_descricao,
 
                     ]
                 )
             )
         page.update()
+
+
     def voltar(e):
         page.views.pop()
         top_view = page.views[-1]
