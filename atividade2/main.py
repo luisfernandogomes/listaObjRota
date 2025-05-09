@@ -44,7 +44,7 @@ def main(page: ft.Page):
                     trailing=ft.PopupMenuButton(
                                             icon=ft.Icons.MORE_VERT,
                                             items=[
-                                                ft.PopupMenuItem(text='detalhes',on_click=lambda _: exibir_detalhesuu(Livro.id)),
+                                                ft.PopupMenuItem(text='detalhes',on_click=lambda _, l=livro: exibir_detalhesuu(l)),
 
                                             ]
                                         )
@@ -66,11 +66,12 @@ def main(page: ft.Page):
     txt_autor = ft.Text('')
     txt_descricao = ft.Text('')
 
-    def exibir_detalhesuu(id_livro):
-        livros = db_session.execute(select(Livro).filter_by(id=id_livro)).scalar()
-        txt_titulo.value = livros.nome
-        txt_autor.value = livros.autor
-        txt_descricao.value = livros.descricao
+    def exibir_detalhesuu(livro):
+
+
+        txt_titulo.value = livro.nome
+        txt_autor.value = livro.autor
+        txt_descricao.value = livro.descricao
         page.go('/terceira')
 
     # def exibir_lista(e):
