@@ -15,9 +15,11 @@ class Livro(Base):
     nome = Column(String, nullable=False)
     descricao = Column(String, nullable=False)
     autor = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
+    ISBN = Column(String, nullable=False)
 
     def __repr__(self):
-        return'<usuario {},{},{}>'.format(self.nome, self.descricao, self.autor)
+        return'<usuario {},{},{},{},{}>'.format(self.nome, self.descricao, self.autor, self.categoria, self.ISBN)
     def save(self):
         db_session.add(self)
         db_session.commit()
@@ -27,6 +29,8 @@ class Livro(Base):
             'nome': self.nome,
             'descricao': self.descricao,
             'autor': self.autor,
+            'categoria': self.categoria,
+            'ISBN': self.ISBN
         }
         return dados_usuario
 

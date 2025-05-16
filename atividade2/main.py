@@ -12,7 +12,7 @@ from sqlalchemy import select, desc
 def main(page: ft.Page):
     # Configurações
     page.title = "Exemplo de Rotas"
-    page.theme_mode = ft.ThemeMode.DARK  # ou ft.ThemeMode.DARK
+    page.theme_mode = ft.ThemeMode.DARK
     page.window.width = 375
     page.window.height = 667
     # def lista_em_detalhes(e):
@@ -38,7 +38,7 @@ def main(page: ft.Page):
         for livro in livros:
             lv_Descricao.controls.append(
                 ft.ListTile(
-                    leading=ft.Icon(ft.Icons.PERSON),
+                    leading=ft.Icon(ft.Icons.BOOK),
                     title=ft.Text(livro.nome),
                     subtitle=ft.Text(livro.autor),
                     trailing=ft.PopupMenuButton(
@@ -60,19 +60,23 @@ def main(page: ft.Page):
         lv_Descricao.controls.clear()
         for livro in livros:
             lv_Descricao.controls.append(
-                ft.Text(value=f'Nome do livro: {livro.nome}\nDescricao do livro: {livro.descricao}\nAutor do livro: {livro.autor}\n\n\n')
+                ft.Text(value=f'Nome do livro: {livro.nome}\nDescricao do livro: {livro.descricao}\nAutor do livro: {livro.autor}\n categoria: {livro.categoria}\n INSBN: {livro.ISBN}')
             )
     txt_titulo = ft.Text('')
     txt_autor = ft.Text('')
     txt_descricao = ft.Text('')
+    txt_categoria = ft.Text('')
+    txt_ISBN = ft.Text('')
 
     def exibir_detalhesuu(livro):
 
 
-        txt_titulo.value = livro.nome
-        txt_autor.value = livro.autor
-        txt_descricao.value = livro.descricao
-        page.go('/terceira')
+        txt_titulo.value = 'titulo: ' + livro.nome
+        txt_autor.value = 'autor: ' + livro.autor
+        txt_descricao.value = 'descricao ' + livro.descricao
+        txt_categoria.value = 'categoria: ' + livro.categoria
+        txt_ISBN.value = 'ISBN: ' + livro.ISBN
+        page.go('/detalhes')
 
     # def exibir_lista(e):
     #     print('teste')
@@ -89,16 +93,18 @@ def main(page: ft.Page):
             page.overlay.append(msg_error)
             msg_error.open = True
             page.update()
-        elif input_nome.value in lista:
+        elif input_ISBN.value in lista:
             page.overlay.append(msg_error)
             msg_error.open = True
             page.update()
         else:
-            livro = Livro(nome=input_nome.value, descricao=input_descricao.value, autor=input_autor.value)
+            livro = Livro(nome=input_nome.value, descricao=input_descricao.value, autor=input_autor.value, categoria=input_categoria.value, ISBN=input_ISBN.value)
             livro.save()
             input_nome.value = ''
             input_descricao.value = ''
             input_autor.value = ''
+            input_categoria.value = ''
+            input_ISBN.value = ''
             page.overlay.append(msg_sucesso)
             msg_sucesso.open = True
             page.update()
@@ -114,23 +120,25 @@ def main(page: ft.Page):
                     input_nome,
                     input_descricao,
                     input_autor,
+                    input_categoria,
+                    input_ISBN,
                     ft.Button(
                         text="Salvar",
                         on_click=lambda _: salvar_livro(e),
                     ),
                     ft.Button(
                         text="Exibir",
-                        on_click=lambda _: page.go('/segunda'),
+                        on_click=lambda _: page.go('/livros'),
                     )
                 ],
             )
         )
-        if page.route == "/segunda" or page.route == "/terceira":
+        if page.route == "/livros" or page.route == "/detalhes":
             exibir_banco_em_detalhes(e)
 
             page.views.append(
                 View(
-                    "/segunda",
+                    "/Livros",
                     [
                         AppBar(title=Text("Segunda tela"), bgcolor=Colors.SECONDARY_CONTAINER),
                         lv_Descricao,
@@ -141,15 +149,17 @@ def main(page: ft.Page):
                 )
             )
         page.update()
-        if page.route == "/terceira":
+        if page.route == "/detalhes":
             page.views.append(
                 View(
-                    "/terceira",
+                    "/detalhes",
                     [
-                        AppBar(title=Text('terceira tela'), bgcolor=Colors.SECONDARY_CONTAINER),
+                        AppBar(title=Text('Detalhes do livro'), bgcolor=Colors.SECONDARY_CONTAINER),
                         txt_titulo,
                         txt_autor,
                         txt_descricao,
+                        txt_categoria,
+                        txt_ISBN,
 
                     ]
                 )
@@ -182,11 +192,12 @@ def main(page: ft.Page):
     )
     lv_Descricao = ft.ListView(
         height=500,
-
     )
     input_nome = ft.TextField(label="Digite o nome do livro")
     input_descricao = ft.TextField(label='insira a descricao do livro')
     input_autor = ft.TextField(label='insira o autor do livro')
+    input_categoria = ft.TextField(label='insira a categoria do livro')
+    input_ISBN = ft.TextField(label='insira o ISBN do livro')
     # Eventos
     page.on_route_change = gerencia_rotas
     page.on_view_pop = voltar
